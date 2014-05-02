@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html>
+  <head>
+      <title>Datos censales de la provincia de Córdoba segun censo Argentino 2010</title>
+      <meta name="description" content="Datos censales de la provincia de Córdoba segun censo Argentino 2010">
+<meta name="keywords" content="censo, Cordoba, Argentina, 2010, datos, mapa">
+<meta name="author" content="Andres Vazquez">
+<meta property=”og:title” content="Censo 2010 Argentina. Datos para Córdoba. Mapa ilustrativo"/>
+<meta property=”og:description” content="mapa segun datos censales de la provincia de Córdoba"/>
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no" />
+    <style type="text/css">
+      html { height: 100% }
+      body { height: 100%; margin: 0; padding: 0 }
+      #info {margin: 5px;}
+      #map-canvas { height: 90%; padding: 10px; }
+    </style>
+    <script type="text/javascript" src="resources/js/jquery-1.10.2.min.js"></script>
+    <script type="text/javascript">  
+      var marcadores = [];
+      var map;
+      var heatmap;
+      var datos = []; // all dataset
+      var datosT = {}; //datos como totales, max y min
+      var datosT2 = [] // maximos, minimos y totales por radio
+      var datosP = []; //porcentajes de los valores
+      var datosMin = [];
+      var datosMax = [];//indica si un valor es el máximo de su grupo
+      var flds = {};
+      function initialize() {
+      
+flds['P_TOTAL'] = 'Poblacion';
+flds['H_TOTAL'] = 'Hogares';
+flds['V__TOTAL'] = 'Viviendas';
+flds['V01_01'] = 'V01-Vivienda TIPO particular';
+flds['V01_02'] = 'V01-Vivienda TIPO: Hogar de ancianos';
+flds['V01_03'] = 'V01-Vivienda TIPO: Hogar de menores';
+flds['V01_04'] = 'V01-Vivienda TIPO: Colegio internado';
+flds['V01_05'] = 'V01-Vivienda TIPO: Campamento/obrador';
+flds['V01_06'] = 'V01-Vivienda TIPO: Hospital';
+flds['V01_07'] = 'V01-Vivienda TIPO: Prisión';
+flds['V01_08'] = 'V01-Vivienda TIPO: Cuartel';
+flds['V01_09'] = 'V01-Vivienda TIPO: Hogar de religiosos';
+flds['V01_10'] = 'V01-Vivienda TIPO: Hotel turístico';
+flds['V01_11'] = 'V01-Vivienda TIPO: Otros';
+flds['V02_01'] = 'V02-Vivienda con un solo hogar';
+flds['V02_02'] = 'V02-Vivienda Con dos o más hogares';
+flds['V03_01'] = 'V03-Vivienda area Urbano';
+flds['V03_02'] = 'V03-Vivienda area Rural agrupado';
+flds['V03_03'] = 'V03-Vivienda area Rural disperso';
+flds['V04_01'] = 'V04-Vivienda Calidad de Conexiones a Servicios Basicos:Satisfactorio';
+flds['V04_02'] = 'V04-Vivienda Calidad de Conexiones a Servicios Basicos: Basico';
+flds['V04_03'] = 'V04-Vivienda Calidad de Conexiones a Servicios Basicos:Insuficiente';
+flds['V05_01'] = 'V05-Vivienda Calidad constructiva :Satisfactoria';
+flds['V05_02'] = 'V05-Vivienda Calidad constructiva :Basico';
+flds['V05_03'] = 'V05-Vivienda Calidad constructiva :Insuficiente';
+flds['V06_01'] = 'V06-VIVIENDA materiales: Calidad 1';
+flds['V06_02'] = 'V06-VIVIENDA materiales: Calidad 2';
+flds['V06_03'] = 'V06-VIVIENDA materiales: Calidad 3';
+flds['V06_04'] = 'V06-VIVIENDA materiales: Calidad 4';
+flds['V07_01'] = 'V07-ocupacion: Con personas presentes';
+flds['V07_02'] = 'V07-ocupacion: Con todas las personas temporalmente ausentes';
+flds['V07_03'] = 'V07-ocupacion: En alquiler o venta';
+flds['V07_04'] = 'V07-ocupacion: En construcción';
+flds['V07_05'] = 'V07-ocupacion: Se usa como comercio, oficina o consultorio';
+flds['V07_06'] = 'V07-Ocupacion: Se usa para vacaciones';
+flds['V07_07'] = 'V07-ocupacion: Por otra razón';
+flds['V08_01'] = 'V08-Tipo de vivienda particular: Casa';
+flds['V08_02'] = 'V08-Tipo de vivienda particular: Rancho';
+flds['V08_03'] = 'V08-Tipo de vivienda particular: Casilla';
+flds['V08_04'] = 'V08-Tipo de vivienda particular: Departamento';
+flds['V08_05'] = 'V08-Tipo de vivienda particular: Pieza en inquilinato';
+flds['V08_06'] = 'V08-Tipo de vivienda particular: Pieza en hotel familiar o pensión';
+flds['V08_07'] = 'V08-Tipo de vivienda particular Local no construido para habitación';
+flds['V08_08'] = 'V08-Tipo de vivienda particular: Vivienda móvil';
+flds['V08_09'] = 'V08-Tipo de vivienda particular: Persona/s viviendo en la calle';
+flds['V09_01'] = 'V09-Hogares Tenencia de agua:Por cañeria dentro de la vivienda';
+flds['V09_02'] = 'V09-Hogares Tenencia de agua: Fuera de la vivienda pero dentro del terreno';
+flds['V09_03'] = 'V09-Hogares Tenencia de agua: Fuera del terreno';
+flds['H01_01'] = 'H01-HOGAR Tiene baño o letrina';
+flds['H01_02'] = 'H01-HOGAR No tiene baño o letrina';
+flds['H02_01'] = 'HH02-ogar Baño / letrina usado slo por este hogar';
+flds['H02_02'] = 'H02-Hogar Baño / letrina compartido con otros hogares';
+flds['H03_01'] = 'H03-HOGAR Con Heladera';
+flds['H03_02'] = 'H03-HOGAR Sin heladera';
+flds['H04_01'] = 'H04-Si Tiene botón, cadena, mochila para limpieza del inodoro';
+flds['H04_02'] = 'H04-No Tiene botón, cadena, mochila para limpieza del inodoro';
+flds['H05_01'] = 'H05-Sin NBI';
+flds['H05_02'] = 'H05-Con NBI';
+flds['H06_01'] = 'H06-HOGAR Si tiene telefono celular';
+flds['H06_02'] = 'H06-HOGAR No tiene telefono celular';
+flds['H07_01'] = 'H07-HOGAR Revestimiento interior o cielorraso del techo: Si';
+flds['H07_02'] = 'H07-HOGAR Revestimiento interior o cielorraso del techo: No';
+flds['H08_01'] = 'H08-HOGAR Si tiene telefono de linea';
+flds['H08_02'] = 'H08-HOGAR No tiene telefono de linea';
+flds['H09_01'] = 'H09-HOGAR con computadora';
+flds['H09_02'] = 'H09-HOGAR sin computadora';
+flds['H10_01'] = 'H10-HOGAR: material pisos: Cerámica, baldosa, mosaico, mármol, madera o alfombrado';
+flds['H10_02'] = 'H10-HOGAR: material pisos: Cemento o ladrillo fijo';
+flds['H10_03'] = 'H10-HOGAR: material pisos: Tierra o ladrillo suelto';
+flds['H10_04'] = 'H10-HOGAR: material pisos: Otro';
+flds['H11_01'] = 'H11-HOGAR Desague del inodoro: A red publica (cloaca)';
+flds['H11_02'] = 'H11-HOGAR:Desague del inodoro A cámara séptica y pozo ciego';
+flds['H11_03'] = 'H11-HOGAR:Desague del inodoro: Sólo a pozo ciego';
+flds['H11_04'] = 'H11-HOGAR:Desague del inodoro: A hoyo, excavacián en la tierra, etc.';
+flds['H12_01'] = 'H12-HOGAR Procedencia del agua para beber y cocinar: Red pública';
+flds['H12_02'] = 'H12-HOGAR Procedencia del agua para beber y cocinar: Perforación con bomba a motor';
+flds['H12_03'] = 'H12-HOGAR Procedencia del agua para beber y cocinar: Perforación con bomba manual';
+flds['H12_04'] = 'H12-HOGAR Procedencia del agua para beber y cocinar: Pozo';
+flds['H12_05'] = 'H12-HOGAR Procedencia del agua para beber y cocinar: Transporte por cisterna';
+flds['H12_06'] = 'H12-HOGAR Procedencia del agua para beber y cocinar: Agua de lluvia, río, canal, arroyo o acequia';
+flds['H13_01'] = 'H13-Hogar-Condicion de propiedad: Propietario de la vivienda y del terreno';
+flds['H13_02'] = 'H13-Hogar-Condicion de propiedad: Propietario sólo de la vivienda';
+flds['H13_03'] = 'H13-Hogar-Condicion de propiedad: Inquilino';
+flds['H13_04'] = 'H13-Hogar-Condicion de propiedad: Ocupante por préstamo';
+flds['H13_05'] = 'H13-Hogar-Condicion de propiedad: Ocupante por trabajo';
+flds['H13_06'] = 'H13-Hogar-Condicion de propiedad: Otra situación';
+flds['H14_01'] = 'H14-HOGAR Combustible usado para cocinar: Gas de red';
+flds['H14_02'] = 'H14-HOGAR Combustible usado para cocinar Gas a granel (zeppelin)';
+flds['H14_03'] = 'H14-HOGAR Combustible usado para cocinar Gas en tubo';
+flds['H14_04'] = 'H14-HOGAR Combustible usado para cocinar Gas en garrafa';
+flds['H14_05'] = 'H14-HOGAR Combustible usado para cocinar Electricidad';
+flds['H14_06'] = 'H14-HOGAR Combustible usado para cocinar Leña o carbón';
+flds['H14_07'] = 'H14-HOGAR Combustible usado para cocinar Otro';
+flds['H15_01'] = 'H15-Hogar hacinamiento: Hasta   0.50 personas por cuarto';
+flds['H15_02'] = 'H15-Hogar hacinamiento: 0.51  -  0.99  personas por cuarto';
+flds['H15_03'] = 'H15-Hogar hacinamiento: 1.00  -  1.49  personas por cuarto';
+flds['H15_04'] = 'H15-Hogar hacinamiento: 1.50  -  1.99  personas por cuarto';
+flds['H15_05'] = 'H15-Hogar hacinamiento: 2.00  -  3.00  personas por cuarto';
+flds['H15_06'] = 'H15-Hogar hacinamiento: Más de  3.00 personas por cuarto';
+flds['H16_01'] = 'H16-HOGAR Material cubierta exterior techo: Cubierta asfáltica o membrana';
+flds['H16_02'] = 'H16-HOGAR Material cubierta exterior techo: Baldosa o losa (sin cubierta)';
+flds['H16_03'] = 'H16-HOGAR Material cubierta exterior techo: Pizarra o teja';
+flds['H16_04'] = 'H16-HOGAR Material cubierta exterior techo: Chapa de metal (sin cubierta)';
+flds['H16_05'] = 'H16-HOGAR Material cubierta exterior techo: Chapa fibrocemento o plástico';
+flds['H16_06'] = 'H16-HOGAR Material cubierta exterior techo: Chapa de cartón';
+flds['H16_07'] = 'H16-HOGAR Material cubierta exterior techo: Caña, palma, tabla o paja con o sin barro';
+flds['H16_08'] = 'H16-HOGAR Material cubierta exterior techo: Otro';
+flds['H17_01'] = 'H17-Hogar Personas en el Hogar: 1';
+flds['H17_02'] = 'H17-Hogar Personas en el Hogar: 2';
+flds['H17_03'] = 'H17-Hogar Personas en el Hogar: 3';
+flds['H17_04'] = 'H17-Hogar Personas en el Hogar: 4';
+flds['H17_05'] = 'H17-Hogar Personas en el Hogar: 5';
+flds['H17_06'] = 'H17-Hogar Personas en el Hogar: 6';
+flds['H17_07'] = 'H17-Hogar Personas en el Hogar: 7';
+flds['H17_08'] = 'H17-Hogar Personas en el Hogar: 8  y más';
+flds['P01_01'] = 'P01-PERSONA Pais de nacimiento:Argentina';
+flds['P01_02'] = 'P01-PERSONA Pais de nacimiento:Otros';
+flds['P02_01'] = 'P02-PERSONA - Sabe leer y escribir: Si';
+flds['P02_02'] = 'P02-PERSONA - Sabe leer y escribir:No';
+flds['P03_01'] = 'P03-PERSONA - Nivel educativo que cursa o cursó: Inicial (jardin, preescolar)';
+flds['P03_02'] = 'P03-PERSONA - Nivel educativo que cursa o cursó: Primario';
+flds['P03_03'] = 'P03-PERSONA - Nivel educativo que cursa o cursó: EGB';
+flds['P03_04'] = 'P03-PERSONA - Nivel educativo que cursa o cursó: Secundario';
+flds['P03_05'] = 'P03-PERSONA - Nivel educativo que cursa o cursó: Polimodal';
+flds['P03_06'] = 'P03-PERSONA - Nivel educativo que cursa o cursó: Superior no universitario';
+flds['P03_07'] = 'P03-PERSONA - Nivel educativo que cursa o cursó: Universitario';
+flds['P03_08'] = 'P03-PERSONA - Nivel educativo que cursa o cursó: Post universitario';
+flds['P03_09'] = 'P03-PERSONA - Nivel educativo que cursa o cursó: Educacion especial';
+flds['P04_01'] = 'P04-PERSONA Si utiliza computadora';
+flds['P04_02'] = 'P04-PERSONA No utiliza computadora';
+flds['P05_01'] = 'P05-PERSONAVaron';
+flds['P05_02'] = 'P05-PERSONA Mujer';
+flds['P07_01'] = 'P07-PERSONA Actividad: Ocupado';
+flds['P07_02'] = 'P07-PERSONA Actividad: Desocupado';
+flds['P07_03'] = 'P07-PERSONA Actividad: Inactivo';
+flds['P08_01'] = 'P08-PERSONA Condicion de asistencia escolar: Asiste';
+flds['P08_02'] = 'P08-PERSONA Condicion de asistencia escolar: Asistió';
+flds['P08_03'] = 'P08-PERSONA Condicion de asistencia escolar: Nunca asistio';
+flds['P09_01'] = 'P09-PERSONA Edades: 0 - 14';
+flds['P09_02'] = 'P09-PERSONA Edades: 15 - 64';
+flds['P09_03'] = 'P09-PERSONA Edades: 65 y más';
+flds['P10_01'] = 'P10-PERSONA parentesco con el jefe(a) del hogar: Jefe(a)';
+flds['P10_02'] = 'P10-PERSONA parentesco con el jefe(a) del hogar: Cónyuge o pareja';
+flds['P10_03'] = 'P10-PERSONA parentesco con el jefe(a) del hogar: Hijo(a) / Hijastro(a)';
+flds['P10_04'] = 'P10-PERSONA parentesco con el jefe(a) del hogar: Yerno / Nuera';
+flds['P10_05'] = 'P10-PERSONA parentesco con el jefe(a) del hogar: Nieto(a)';
+flds['P10_06'] = 'P10-PERSONA parentesco con el jefe(a) del hogar: Padre / Madre / Suegro(a)';
+flds['P10_07'] = 'P10-PERSONA parentesco con el jefe(a) del hogar: Otros familiares';
+flds['P10_08'] = 'P10-PERSONA parentesco con el jefe(a) del hogar: Otros no familiares';
+flds['P10_09'] = 'P10-PERSONA parentesco con el jefe(a) del hogar: Servicio doméstico y sus familiares';
+flds['P11_01'] = 'P11-Persona-EDADQUI: 0-4';
+flds['P11_02'] = 'P11-Persona-EDADQUI: 5-9';
+flds['P11_03'] = 'P11-Persona-EDADQUI: 10-14';
+flds['P11_04'] = 'P11-Persona-EDADQUI: 15-19';
+flds['P11_05'] = 'P11-Persona-EDADQUI: 20-24';
+flds['P11_06'] = 'P11-Persona-EDADQUI: 25-29';
+flds['P11_07'] = 'P11-Persona-EDADQUI: 30-34';
+flds['P11_08'] = 'P11-Persona-EDADQUI: 35-39';
+flds['P11_09'] = 'P11-Persona-EDADQUI: 40-44';
+flds['P11_10'] = 'P11-Persona-EDADQUI: 45-49';
+flds['P11_11'] = 'P11-Persona-EDADQUI: 50-54';
+flds['P11_12'] = 'P11-Persona-EDADQUI: 55-59';
+flds['P11_13'] = 'P11-Persona-EDADQUI: 60-64';
+flds['P11_14'] = 'P11-Persona-EDADQUI: 65-69';
+flds['P11_15'] = 'P11-Persona-EDADQUI: 70-74';
+flds['P11_16'] = 'P11-Persona-EDADQUI: 75-79';
+flds['P11_17'] = 'P11-Persona-EDADQUI: 80-84';
+flds['P11_18'] = 'P11-Persona-EDADQUI: 85-89';
+flds['P11_19'] = 'P11-Persona-EDADQUI: 90-94';
+flds['P11_20'] = 'P11-Persona-EDADQUI: 95 y más';
+flds['P12_01'] = 'P12-edad_0';
+flds['P12_02'] = 'P12-edad_1';
+flds['P12_03'] = 'P12-edad_2';
+flds['P12_04'] = 'P12-edad_3';
+flds['P12_05'] = 'P12-edad_4';
+flds['P12_06'] = 'P12-edad_5';
+flds['P12_07'] = 'P12-edad_6';
+flds['P12_08'] = 'P12-edad_7';
+flds['P12_09'] = 'P12-edad_8';
+flds['P12_10'] = 'P12-edad_9';
+flds['P12_11'] = 'P12-edad_10';
+flds['P12_12'] = 'P12-edad_11';
+flds['P12_13'] = 'P12-edad_12';
+flds['P12_14'] = 'P12-edad_13';
+flds['P12_15'] = 'P12-edad_14';
+flds['P12_16'] = 'P12-edad_15';
+flds['P12_17'] = 'P12-edad_16';
+flds['P12_18'] = 'P12-edad_17';
+flds['P12_19'] = 'P12-edad_18';
+flds['P12_20'] = 'P12-edad_19';
+flds['P12_21'] = 'P12-edad_20';
+flds['P12_22'] = 'P12-edad_21';
+flds['P12_23'] = 'P12-edad_22';
+flds['P12_24'] = 'P12-edad_23';
+flds['P12_25'] = 'P12-edad_24';
+flds['P12_26'] = 'P12-edad_25';
+flds['P12_27'] = 'P12-edad_26';
+flds['P12_28'] = 'P12-edad_27';
+flds['P12_29'] = 'P12-edad_28';
+flds['P12_30'] = 'P12-edad_29';
+flds['P12_31'] = 'P12-edad_30';
+flds['P12_32'] = 'P12-edad_31';
+flds['P12_33'] = 'P12-edad_32';
+flds['P12_34'] = 'P12-edad_33';
+flds['P12_35'] = 'P12-edad_34';
+flds['P12_36'] = 'P12-edad_35';
+flds['P12_37'] = 'P12-edad_36';
+flds['P12_38'] = 'P12-edad_37';
+flds['P12_39'] = 'P12-edad_38';
+flds['P12_40'] = 'P12-edad_39';
+flds['P12_41'] = 'P12-edad_40';
+flds['P12_42'] = 'P12-edad_41';
+flds['P12_43'] = 'P12-edad_42';
+flds['P12_44'] = 'P12-edad_43';
+flds['P12_45'] = 'P12-edad_44';
+flds['P12_46'] = 'P12-edad_45';
+flds['P12_47'] = 'P12-edad_46';
+flds['P12_48'] = 'P12-edad_47';
+flds['P12_49'] = 'P12-edad_48';
+flds['P12_50'] = 'P12-edad_49';
+flds['P12_51'] = 'P12-edad_50';
+flds['P12_52'] = 'P12-edad_51';
+flds['P12_53'] = 'P12-edad_52';
+flds['P12_54'] = 'P12-edad_53';
+flds['P12_55'] = 'P12-edad_54';
+flds['P12_56'] = 'P12-edad_55';
+flds['P12_57'] = 'P12-edad_56';
+flds['P12_58'] = 'P12-edad_57';
+flds['P12_59'] = 'P12-edad_58';
+flds['P12_60'] = 'P12-edad_59';
+flds['P12_61'] = 'P12-edad_60';
+flds['P12_62'] = 'P12-edad_61';
+flds['P12_63'] = 'P12-edad_62';
+flds['P12_64'] = 'P12-edad_63';
+flds['P12_65'] = 'P12-edad_64';
+flds['P12_66'] = 'P12-edad_65';
+flds['P12_67'] = 'P12-edad_66';
+flds['P12_68'] = 'P12-edad_67';
+flds['P12_69'] = 'P12-edad_68';
+flds['P12_70'] = 'P12-edad_69';
+flds['P12_71'] = 'P12-edad_70';
+flds['P12_72'] = 'P12-edad_71';
+flds['P12_73'] = 'P12-edad_72';
+flds['P12_74'] = 'P12-edad_73';
+flds['P12_75'] = 'P12-edad_74';
+flds['P12_76'] = 'P12-edad_75';
+flds['P12_77'] = 'P12-edad_76';
+flds['P12_78'] = 'P12-edad_77';
+flds['P12_79'] = 'P12-edad_78';
+flds['P12_80'] = 'P12-edad_79';
+flds['P12_81'] = 'P12-edad_80';
+flds['P12_82'] = 'P12-edad_81';
+flds['P12_83'] = 'P12-edad_82';
+flds['P12_84'] = 'P12-edad_83';
+flds['P12_85'] = 'P12-edad_84';
+flds['P12_86'] = 'P12-edad_85';
+flds['P12_87'] = 'P12-edad_86';
+flds['P12_88'] = 'P12-edad_87';
+flds['P12_89'] = 'P12-edad_88';
+flds['P12_90'] = 'P12-edad_89';
+flds['P12_91'] = 'P12-edad_90';
+flds['P12_92'] = 'P12-edad_91';
+flds['P12_93'] = 'P12-edad_92';
+flds['P12_94'] = 'P12-edad_93';
+flds['P12_95'] = 'P12-edad_94';
+flds['P12_96'] = 'P12-edad_95';
+flds['P12_97'] = 'P12-edad_96';
+flds['P12_98'] = 'P12-edad_97';
+flds['P12_99'] = 'P12-edad_98';
+flds['P12_100'] = 'P12-edad_99';
+flds['P12_101'] = 'P12-edad_100';
+flds['P12_102'] = 'P12-edad_101';
+flds['P12_103'] = 'P12-edad_102';
+flds['P12_104'] = 'P12-edad_103';
+flds['P12_105'] = 'P12-edad_104';
+flds['P12_106'] = 'P12-edad_105';
+flds['P12_107'] = 'P12-edad_106';
+flds['P12_108'] = 'P12-edad_107';
+flds['P12_109'] = 'P12-edad_108';
+flds['P12_110'] = 'P12-edad_109';
+flds['P12_111'] = 'P12-edad_110';
+
+      
+var styleMap = [
+{"featureType": "water","elementType": "geometry","stylers": [{"visibility": "on"},{"color": "#aee2e0"}]},
+{"featureType": "landscape","elementType": "geometry.fill","stylers": [{"color": "#abce83"}]},
+{"featureType": "poi","elementType": "geometry.fill","stylers": [{"color": "#769E72"}]},
+{"featureType": "poi","elementType": "labels.text.fill","stylers": [{"color": "#7B8758"}]},
+{"featureType": "poi","elementType": "labels.text.stroke","stylers": [{"color": "#EBF4A4"}]},
+{"featureType": "poi.park","elementType": "geometry","stylers": [{"visibility": "simplified"},{"color": "#8dab68"}]},
+{"featureType": "road","elementType": "geometry.fill","stylers": [{"visibility": "simplified"}]},
+{"featureType": "road","elementType": "labels.text.fill","stylers": [{"color": "#5B5B3F"}]},
+{"featureType": "road","elementType": "labels.text.stroke","stylers": [{"color": "#ABCE83"}]},
+{"featureType": "road","elementType": "labels.icon","stylers": [{"visibility": "off"}]},
+{"featureType": "road.local","elementType": "geometry","stylers": [{"color": "#A4C67D"}]},
+{"featureType": "road.arterial","elementType": "geometry","stylers": [{"color": "#9BBF72"}]},
+{"featureType": "road.highway","elementType": "geometry","stylers": [{"color": "#EBF4A4"}]},
+{"featureType": "transit","stylers": [{"visibility": "off"}]},
+{"featureType": "administrative","elementType": "geometry.stroke","stylers": [{"visibility": "on"},{"color": "#87ae79"}]},
+{"featureType": "administrative","elementType": "geometry.fill","stylers": [{"color": "#7f2200"},{"visibility": "off"}]},
+{"featureType": "administrative","elementType": "labels.text.stroke","stylers": [{"color": "#ffffff"},{"visibility": "on"},{"weight": 4.1}]},
+{"featureType": "administrative","elementType": "labels.text.fill","stylers": [{"color": "#495421"}]},
+{"featureType": "administrative.neighborhood","elementType": "labels","stylers": [{"visibility": "off"}]}];
+
+        var mapOptions = {zoom: 7,center: new google.maps.LatLng(-32.4193850264,-64.4349219375)
+            , mapTypeId: google.maps.MapTypeId.TERRAIN
+            , styles: styleMap};
+        map = new google.maps.Map(document.getElementById('map-canvas'),mapOptions);
+        google.maps.event.addListener(map, 'dragend', showData);
+        //google.maps.event.addListener(map, 'center_changed', showData);
+        google.maps.event.addListener(map, 'zoom_changed', showData);      
+        
+        var infod = document.createElement('div');
+        $(infod).attr("id", "info");
+        $(infod).html("<div style='margin: 15px; padding: 35px; background-color: white; border-radius: 5px'><h1>Cargando ...</h1></div>");
+        
+        map.controls[google.maps.ControlPosition.TOP_LEFT].push(infod);
+        
+        var info = "<div style='margin: 15px; max-width: 1250px;background-color: rgba(68, 70, 49, 0.9); padding: 15px; color: white; border-radius: 15px;'>";
+        info += "<h3 style='margin-top: -5px;'>Mapa de Cordoba, datos censo 2010</h3> ";
+        info += "<div id='loading' style='padding:5px; float:left'><img src='resources/img/loading.gif' /></div>"
+
+        //filtro de servicios de DNS
+        var content = [];
+        content.push('Elija variable: ');
+        //content.push('<select id="seldata" onchange="changeData(this.value, $(\'#selheat\').is(\':checked\'));">');
+        content.push('<select id="seldata" onchange="showData();">');
+
+        $.each( flds, function( i, item ) {
+            var sel = (i == "V__TOTAL") ? "selected='selected'" : "";
+            content.push("<option value='"+i+"' " + sel +">" + item + "</option>");
+            });
+        content.push('</select>');
+        var chHeat = ("1" == "1")? 'checked = "checked"' : "";
+        content.push('<input ' + chHeat + ' type="checkbox" id="selheat" onchange="showData();" /> HeatMap<br/>');
+        //define if we show average, full value or another
+        var chProp = ("absoluto" == "proporcional")? 'checked = "checked"' : "";
+        var chAbs = ("absoluto" == "absoluto")? 'checked = "checked"' : "";
+        var chMay = ("absoluto" == "mayor")? 'checked = "checked"' : "";
+        var chMin = ("absoluto" == "menor")? 'checked = "checked"' : "";
+        
+        content.push('<input ' + chProp + ' type="radio" name="dataValue" value="proporcional" onchange="showData();"/><span title="El peso de cada valor es el porcentaje que representa en su grupo. Aplana diferencias entre grandes y pequeñas ciudades">Proporcional</span>');
+        content.push('<input ' + chAbs + 'type="radio" name="dataValue" value="absoluto" onchange="showData();"/><span title="El peso de cada valor es el valor absoluto.">Absoluto</span>');
+        content.push('<input ' + chMay + 'type="radio" name="dataValue" value="mayor" onchange="showData();"/><span title="Solo muestra un punto cuando este es el mayor de su grupo.">Mayor</span>');
+        content.push('<input ' + chMin + 'type="radio" name="dataValue" value="menor" onchange="showData();"/><span title="Solo muestra un punto cuando este es el menor de su grupo.">Menor</span>');
+        
+        content.push('<input type="button" value="ayuda" onclick="$(\'#helpp\').toggle();" />');
+        content.push('<a style="color:white;" href="http://andresvazquez.com.ar/data/cordoba-argentina-segun-censo-2010/" target="_blank">De donde salen estos datos?</a>');
+        
+        content.push("<div id='helpp' style='display:none'>");
+        content.push("<h3>Consideraciones</h3>");
+        content.push("Cada desplazamiento en el mapa (incluyendo zoom) y seleccion de grafico cambia la URL en la barra de direcciones para que pueda compartir <i>exactamente</i> lo que esta viendo solo copiando esta direccion");
+        content.push("<br/>Cada grafico tiene su propia intensidad. El rojo oscuro de una grafico no representa lo mismo que el mismo color en otro");
+        content.push("<br/>La seleccion de valores <i>absolutos</i> pinta sobre el mapa mas oscuro mientras mas grande es el valor de un dato.");
+        content.push("<br/>La selección <i>proporcional</i> valora para cada punto el porcentaje de un valor en su grupo (por ejemplo Gas en garrafa para el grupo H14 de combustible para cocinar). Esto <i>aplana</i> los valores absolutos grandes y mostrará la misma intensidad para un punto que representa 30 de su grupo 100 que uno de 300 en un grupo que totaliza 1000");
+        content.push("<br/>La seleccion <i>mayor</i> SOLO pinta el punto cuando un valor es el mayor de su grupo.");
+        content.push("<br/>La seleccion <i>menor</i> es inversa a la <i>mayor</i>");
+        content.push("<br/>La selección <i>heatmap</i> representa un mapa de calor. Es menos informativo pero mas grafico. Funciona mas rapido");
+        content.push("<br/>Desactivar el mapa de calor (<i>heatmap</i>) muestra mas informacion (clieckeando cada punto) pero es mas lento");
+        content.push("<br/>Cada punto en el mapa es una estimacion bastante acertada pero no exacta del centro de cada <i>radio censal</i>");
+        content.push("</div>");
+        content.push("</div>");
+        info += content.join('');
+
+
+        $(infod).html(info);
+        
+        loadPoints();
+        
+      }
+      
+      function loadPoints()
+        {
+        var xr = $.getJSON("resources/censo2010cba.json");
+        xr.done( function(data) {
+            $.each( data, function( i, item ) {
+                var radios = item.features.length;
+                for (var k=0; k < item.features.length; k++)
+                    {
+                    datos[k] = item.features[k].properties;
+                    
+                    $.each(datos[k], function (i2, item2)
+                        {
+                        if (undefined === datosT2[k]){datosT2[k] = {};}
+                        //maximos, minimos y totales dentro de los campos con el mismo prefijo
+                        var f = i2.substring(0,3);//field prefix
+                        //if (f == "H14" && (datos[k]["coordinates"][0] == "-64.171826" || datos[k]["coordinates"][1] == "-64.171826"))
+                          
+                        if (undefined === datosT2[k][f]){
+                            datosT2[k][f] = {};
+                            datosT2[k][f].total = item2;
+                            datosT2[k][f].max = item2;
+                            datosT2[k][f].min = item2;
+                            }
+                        else
+                            {
+                            datosT2[k][f].total += item2;
+                            if (item2 > datosT2[k][f].max) datosT2[k][f].max = item2;
+                            if (item2 < datosT2[k][f].min) datosT2[k][f].min = item2;
+                            }
+                            
+                        //totales, maximos y minimos provinciales por campo    
+                        if (undefined === datosT[i2.substring(0,3)]){
+                            datosT[i2.substring(0,3)] = {};
+                            datosT[i2.substring(0,3)].total = item2;
+                            datosT[i2.substring(0,3)].max = item2;
+                            datosT[i2.substring(0,3)].min = item2;
+                            }
+                        else
+                            {
+                            datosT[i2.substring(0,3)].total += item2;
+                            if (item2 > datosT[i2.substring(0,3)].max) datosT[i2.substring(0,3)].max = item2;
+                            if (item2 < datosT[i2.substring(0,3)].min) datosT[i2.substring(0,3)].min = item2;
+                            }
+                        });
+                        
+                    }
+                //calcular los porcentajes
+                for (var k=0; k < datos.length; k++){
+                    $.each(datos[k], function (i2, item2){
+                        var porc = item2 / datosT2[k][i2.substring(0,3)].total * 100;
+                        if (undefined === datosP[k]) datosP[k] = {};
+                        if (undefined === datosP[k][i2])  datosP[k][i2] = {};
+                        datosP[k][i2].porc = porc;
+                        if (datosT2[k][i2.substring(0,3)].max == item2) datosP[k][i2]["isMax"] = 1;
+                        if (datosT2[k][i2.substring(0,3)].min == item2) datosP[k][i2]["isMin"] = 1;
+                        });
+                    }
+                });
+                showData("V__TOTAL", true);
+            });
+        xr.fail( function(data) {
+            alert ("FAIL!");
+            });  
+        }
+        
+     function showData()
+        {
+        upUrl();
+        var variable = $('#seldata').val(); // | "V__TOTAL";
+        if (undefined === variable || variable == 0) return;
+        var heat = $('#selheat').is(':checked');
+        var dataValue = $('[name="dataValue"]:checked').val();
+        if (undefined === dataValue) return;
+        $("#loading").show(400);
+        var heats = [];
+        var infowindow = [];
+        var contWin = [];
+        for (m=0; m < marcadores.length; m++)
+            {
+            marcadores[m].marker.setMap(null);
+            }
+        for (var k=0; k < datos.length; k++)
+            {
+            var lati = datos[k].coordinates[1];
+            var longi = datos[k].coordinates[0];
+            
+            //SI NO ESTA A LA VISTA NO VA!
+            var myLatlng = new google.maps.LatLng(lati, longi);
+            if (!map.getBounds().contains(myLatlng)) continue;
+            
+            var valReal = datos[k][variable];
+            if (valReal == 0) continue; // es el valor real
+            var valUse = 0;
+            var v = valReal;
+            var p = datosP[k][variable].porc;
+            p = Math.round(p * 100) / 100;
+            if (dataValue == "absoluto") valUse = valReal;
+            if (dataValue == "proporcional") valUse = p;
+            if (dataValue == "mayor") valUse = datosP[k][variable].isMax | 0;
+            if (dataValue == "menor") valUse = datosP[k][variable].isMin | 0;
+            
+            if (valUse == 0) continue;
+            
+            if (heat)
+                {
+                heats.push({location: myLatlng, weight: valUse});
+                // console.log(k.toString() + "-LINE: " + lati.toString() + ", " + longi.toString() + ":" + valUse.toString());
+                }
+            else
+                {
+                contWin[k] = "<div style='padding: 10px; max-height: 300px; overflow:auto;'>";
+                contWin[k] += "Viviendas/Hogares/Poblacion: <b>" + datos[k]["V__TOTAL"] + "/" + datos[k]["H_TOTAL"] + "/" + datos[k]["P_TOTAL"] + "</b>";
+                contWin[k] += "<br/><b>" + flds[variable] +": " + v.toString()+" - "+ p.toString()+ "%</b>";
+                for (var gr=1; gr<22; gr++)
+                    {
+                    var grupo = variable.substring(0,3);
+                    //var ix = variable.substring(4,6);
+                    var gg = ((gr > 9)) ? gr.toString(): "0" + gr.toString();
+                     
+                    var usar = grupo+"_"+ gg;
+                    
+                    if (undefined == datos[k][usar]) break;
+                    
+                    if (variable !== usar) 
+                        {
+                        valSocio = 0;
+                        var v = datos[k][usar];
+                        var p = datosP[k][usar].porc;
+                        p = Math.round(p * 100) / 100;
+                        if (dataValue == "absoluto") valSocio = datos[k][usar];
+                        if (dataValue == "proporcional") valSocio = p;
+                        if (dataValue == "mayor") valSocio = datosP[k][usar].isMax | 0;
+                        if (dataValue == "menor") valSocio = datosP[k][usar].isMin | 0;
+                        contWin[k] += "<br/>" + flds[usar] +": <b>" + v.toString()+" - "+ p.toString() +"%</b>";
+                        }
+                    }
+                infowindow[k] = new google.maps.InfoWindow({content: contWin[k]});
+                
+                var radio = datosP[k][variable].porc * 4;
+                if (variable == "P_TOTAL") radio = valReal / 5;
+                if (variable == "H_TOTAL" || variable == "V__TOTAL") radio = valReal / 3;
+                
+                 var pointData = {
+                    strokeColor: "#000000",
+                    strokeOpacity: 0.5,
+                    strokeWeight: 2,
+                    fillColor: "#0099FF",
+                    fillOpacity: 0.35,
+                    map: map,
+                    draggable: true,
+                    center: myLatlng,
+                    radius: radio,
+                    clickable: true,
+                    idx: k
+                  };
+                  // Add the circle for this city to the map.
+                  cityCircle = new google.maps.Circle(pointData);
+                  // cityCircle.setMap(map);  
+                  marcadores.push({"mostrar": valReal, "marker":cityCircle, "weight": valUse});
+                  
+                  google.maps.event.addListener(cityCircle, 'click', function(ev){
+                    infowindow[this.idx].setPosition(ev.latLng);
+                    infowindow[this.idx].open(map);
+                    });
+                }
+            }
+            if (heatmap) heatmap.setMap(null);
+            if (heat){
+                var pointArray = new google.maps.MVCArray(heats);
+                heatmap = new google.maps.visualization.HeatmapLayer({data: pointArray});
+                heatmap.setMap(map);
+                //console.log(heats);
+                }
+            else
+                {/*console.log(marcadores);*/}
+        $("#loading").hide(400);    
+        }   
+      
+      function upUrl()
+        {
+        var bc = map.getCenter();
+        var bz = map.getZoom();
+        var dato = $("#seldata").val();
+        var newPos = "";
+        newPos += "/dato/"+dato+"/z/" + bz + "/l1/" + bc.lat() + "/l2/" + bc.lng();
+        var heat = ($('#selheat').is(':checked')) ? "1" : "0";
+        var dataValue = $('[name="dataValue"]:checked').val();
+        newPos += "/sel/"+dataValue+"/heat/"+heat+"/";
+        window.history.pushState("Drag map", "Mapa 2", newPos);
+        }
+
+      function loadScript() {
+        var script = document.createElement('script');
+        script.type = 'text/javascript';
+        //script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyDtM2Vw54AOuuqWBnECYdQn15XtxVC1s-c&sensor=false&callback=initialize';
+        //script.src = 'https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&callback=initialize&libraries=visualization';
+        script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyDtM2Vw54AOuuqWBnECYdQn15XtxVC1s-c&sensor=false&callback=initialize&libraries=visualization';
+        document.body.appendChild(script);
+      }
+      
+      $(document).ready(
+            function()
+                {
+                loadScript(); 
+                });
+      
+    </script>
+    
+    
+    
+    
+    
+  </head>
+  <body>
+    <div id="map-canvas"/>
+    
+    <script type="text/javascript">
+
+    var _gaq = _gaq || [];
+    _gaq.push(['_setAccount', 'UA-24864140-1']);
+    _gaq.push(['_trackPageview']);
+
+    (function() {
+      var ga = document.createElement('script'); ga.type = 'text/javascript'; ga.async = true;
+      ga.src = ('https:' == document.location.protocol ? 'https://ssl' : 'http://www') + '.google-analytics.com/ga.js';
+      var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(ga, s);
+    })();
+
+  </script>
+  
+  </body>
+  
+  
+</html>
