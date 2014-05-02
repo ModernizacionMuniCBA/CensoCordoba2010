@@ -336,9 +336,12 @@ var styleMap = [
         // read GET parametrers
         var getP = {};
         location.search.substr(1).split("&").forEach(function(item) {getP[item.split("=")[0]] = item.split("=")[1];});
-
-
-        var mapOptions = {zoom: 7,center: new google.maps.LatLng(getP.l1,getP.l2)
+        if (undefined === getP.l1) getP.l1 = -32.41938502643319;
+        if (undefined === getP.l2) getP.l1 = -64.4349219375;
+        if (undefined === getP.z) getP.z = -7;
+        if (undefined === getP.dato) getP.dato = "Todos";
+        
+        var mapOptions = {zoom: getP.z,center: new google.maps.LatLng(getP.l1,getP.l2)
             , mapTypeId: google.maps.MapTypeId.TERRAIN
             , styles: styleMap};
         map = new google.maps.Map(document.getElementById('map-canvas'),mapOptions);
