@@ -339,7 +339,9 @@ var styleMap = [
         if (undefined === getP.l1) getP.l1 = -32.41938502643319;
         if (undefined === getP.l2) getP.l2 = -64.4349219375;
         if (undefined === getP.z) getP.z = 7;
-        if (undefined === getP.dato) getP.dato = "Todos";
+        if (undefined === getP.dato) getP.dato = "P_TOTAL";
+        if (undefined === getP.sel) getP.sel = "proporcional";
+        if (undefined === getP.heat) getP.heat = 1;
         
         var mapOptions = {zoom: getP.z, center: new google.maps.LatLng(getP.l1,getP.l2)
             , mapTypeId: google.maps.MapTypeId.TERRAIN
@@ -593,6 +595,9 @@ var styleMap = [
         var dato = $("#seldata").val();
         var newPos = urlBase;
         newPos += "?dato="+dato+"&z=" + bz + "&l1=" + bc.lat() + "&l2=" + bc.lng();
+        var heat = ($('#selheat').is(':checked')) ? "1" : "0";
+        var dataValue = $('[name="dataValue"]:checked').val();
+        newPos += "/sel/"+dataValue+"/heat/"+heat+"/";
         window.history.pushState("Drag map", "Mapa 2", newPos);
         }
 
