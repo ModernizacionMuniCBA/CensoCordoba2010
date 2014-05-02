@@ -593,9 +593,6 @@ var styleMap = [
         var dato = $("#seldata").val();
         var newPos = urlBase;
         newPos += "?dato="+dato+"&z=" + bz + "&l1=" + bc.lat() + "&l2=" + bc.lng();
-        var heat = ($('#selheat').is(':checked')) ? "1" : "0";
-        var dataValue = $('[name="dataValue"]:checked').val();
-        newPos += "&sel="+dataValue+"&heat="+heat;
         window.history.pushState("Drag map", "Mapa 2", newPos);
         }
 
