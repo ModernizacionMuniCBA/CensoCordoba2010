@@ -26,6 +26,7 @@
       var datosMin = [];
       var datosMax = [];//indica si un valor es el máximo de su grupo
       var flds = {};
+      var urlBase = "http://hackathonfopea.github.io/CensoCordoba2010";
       function initialize() {
       
 flds['P_TOTAL'] = 'Poblacion';
@@ -332,7 +333,12 @@ var styleMap = [
 {"featureType": "administrative","elementType": "labels.text.fill","stylers": [{"color": "#495421"}]},
 {"featureType": "administrative.neighborhood","elementType": "labels","stylers": [{"visibility": "off"}]}];
 
-        var mapOptions = {zoom: 7,center: new google.maps.LatLng(-32.4193850264,-64.4349219375)
+        // read GET parametrers
+        var getP = {};
+        location.search.substr(1).split("&").forEach(function(item) {getP[item.split("=")[0]] = item.split("=")[1];});
+
+
+        var mapOptions = {zoom: 7,center: new google.maps.LatLng(getP.l1,getP.l2)
             , mapTypeId: google.maps.MapTypeId.TERRAIN
             , styles: styleMap};
         map = new google.maps.Map(document.getElementById('map-canvas'),mapOptions);
@@ -357,17 +363,17 @@ var styleMap = [
         content.push('<select id="seldata" onchange="showData();">');
 
         $.each( flds, function( i, item ) {
-            var sel = (i == "V__TOTAL") ? "selected='selected'" : "";
+            var sel = (i == getP.dato) ? "selected='selected'" : "";
             content.push("<option value='"+i+"' " + sel +">" + item + "</option>");
             });
         content.push('</select>');
-        var chHeat = ("1" == "1")? 'checked = "checked"' : "";
+        var chHeat = ("1" == getP.heat)? 'checked = "checked"' : "";
         content.push('<input ' + chHeat + ' type="checkbox" id="selheat" onchange="showData();" /> HeatMap<br/>');
         //define if we show average, full value or another
-        var chProp = ("absoluto" == "proporcional")? 'checked = "checked"' : "";
-        var chAbs = ("absoluto" == "absoluto")? 'checked = "checked"' : "";
-        var chMay = ("absoluto" == "mayor")? 'checked = "checked"' : "";
-        var chMin = ("absoluto" == "menor")? 'checked = "checked"' : "";
+        var chProp = (getP.sel == "proporcional")? 'checked = "checked"' : "";
+        var chAbs = (getP.sel == "absoluto")? 'checked = "checked"' : "";
+        var chMay = (getP.sel == "mayor")? 'checked = "checked"' : "";
+        var chMin = (getP.sel == "menor")? 'checked = "checked"' : "";
         
         content.push('<input ' + chProp + ' type="radio" name="dataValue" value="proporcional" onchange="showData();"/><span title="El peso de cada valor es el porcentaje que representa en su grupo. Aplana diferencias entre grandes y pequeñas ciudades">Proporcional</span>');
         content.push('<input ' + chAbs + 'type="radio" name="dataValue" value="absoluto" onchange="showData();"/><span title="El peso de cada valor es el valor absoluto.">Absoluto</span>');
@@ -375,7 +381,7 @@ var styleMap = [
         content.push('<input ' + chMin + 'type="radio" name="dataValue" value="menor" onchange="showData();"/><span title="Solo muestra un punto cuando este es el menor de su grupo.">Menor</span>');
         
         content.push('<input type="button" value="ayuda" onclick="$(\'#helpp\').toggle();" />');
-        content.push('<a style="color:white;" href="http://andresvazquez.com.ar/data/cordoba-argentina-segun-censo-2010/" target="_blank">De donde salen estos datos?</a>');
+        content.push('<a style="color:white;" href="andresvazquez.com.ar/blog/cordoba-a-nivel-de-radio-censal/" target="_blank">De donde salen estos datos?</a>');
         
         content.push("<div id='helpp' style='display:none'>");
         content.push("<h3>Consideraciones</h3>");
@@ -467,7 +473,7 @@ var styleMap = [
      function showData()
         {
         upUrl();
-        var variable = $('#seldata').val(); // | "V__TOTAL";
+        var variable = $('#seldata').val();
         if (undefined === variable || variable == 0) return;
         var heat = $('#selheat').is(':checked');
         var dataValue = $('[name="dataValue"]:checked').val();
@@ -582,7 +588,7 @@ var styleMap = [
         var bc = map.getCenter();
         var bz = map.getZoom();
         var dato = $("#seldata").val();
-        var newPos = "CensoCordoba2010";
+        var newPos = urlBase;
         newPos += "?dato="+dato+"&z=" + bz + "&l1=" + bc.lat() + "&l2=" + bc.lng();
         var heat = ($('#selheat').is(':checked')) ? "1" : "0";
         var dataValue = $('[name="dataValue"]:checked').val();
