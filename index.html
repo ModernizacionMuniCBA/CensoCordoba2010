@@ -26,7 +26,7 @@
       var datosMin = [];
       var datosMax = [];//indica si un valor es el máximo de su grupo
       var flds = {};
-      var urlBase = "http://hackathonfopea.github.io/CensoCordoba2010";
+      var urlBase = "http://localhost/andres/devs/fopea/CensoCordoba2010";
       function initialize() {
       
 flds['P_TOTAL'] = 'Poblacion';
@@ -607,7 +607,9 @@ var styleMap = [
         script.type = 'text/javascript';
         //script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyDtM2Vw54AOuuqWBnECYdQn15XtxVC1s-c&sensor=false&callback=initialize';
         //script.src = 'https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&callback=initialize&libraries=visualization';
-        script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyDtM2Vw54AOuuqWBnECYdQn15XtxVC1s-c&sensor=false&callback=initialize&libraries=visualization';
+        //script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyDtM2Vw54AOuuqWBnECYdQn15XtxVC1s-c&sensor=false&callback=initialize&libraries=visualization';
+        script.src = 'https://maps.googleapis.com/maps/api/js?key=AIzaSyC_ljkIs4MnzC82Mmww-K19IE8YSXUgxAU&sensor=false&callback=initialize&libraries=visualization';
+        
         document.body.appendChild(script);
       }
       
